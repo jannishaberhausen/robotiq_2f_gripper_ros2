@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="robot_state_publisher" exec="robot_state_publisher">
+     <param name='robot_description' type="str" value="$(command 'xacro $(find-pkg-share robotiq_2f_gripper_description)/urdf/robotiq_2f_140.xacro')"/>
+  </node>
+   <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share robotiq_2f_gripper_description)/launch/robotiq_2f_gripper.rviz" />
+   <node pkg="joint_state_publisher_gui" exec="joint_state_publisher_gui" />
+</launch>

@@ -1,0 +1,10 @@
+# Goal definition
+float32 target_position     # [m] target distance between fingers
+float32 target_speed 1.0    # [%] of max speed [0.0 - 1.0]
+float32 target_force 0.5    # [%] of max force [0.0 - 1.0]
+---
+# Result definition
+bool success
+---
+# Feedback definition
+string feedback
