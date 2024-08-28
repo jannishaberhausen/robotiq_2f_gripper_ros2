@@ -110,18 +110,18 @@ rclcpp_action::GoalResponse GripperNode::handle_move_goal(
     }
 
     // Check if the goal is valid
-    // if (goal->target_position < 0 || goal->target_position > 0.140001) {
-    //     RCLCPP_ERROR(get_logger(), "Invalid goal request, target position (in meters [m]) must be between 0 (fully closed) and 0.14 (fully open)");
-    //     return rclcpp_action::GoalResponse::REJECT;
-    // }
-    // if (goal->target_speed < 0 || goal->target_speed > 1) {
-    //     RCLCPP_ERROR(get_logger(), "Invalid goal request, target speed must be between 0 and 1");
-    //     return rclcpp_action::GoalResponse::REJECT;
-    // }
-    // if (goal->target_force < 0 || goal->target_force > 1) {
-    //     RCLCPP_ERROR(get_logger(), "Invalid goal request, target force must be between 0 and 1");
-    //     return rclcpp_action::GoalResponse::REJECT;
-    // }
+    if (goal->target_position < 0 || goal->target_position > 0.142) {
+        RCLCPP_ERROR(get_logger(), "Invalid goal request, target position (in meters [m]) must be between 0 (fully closed) and 0.14 (fully open)");
+        return rclcpp_action::GoalResponse::REJECT;
+    }
+    if (goal->target_speed < 0 || goal->target_speed > 1) {
+        RCLCPP_ERROR(get_logger(), "Invalid goal request, target speed must be between 0 and 1");
+        return rclcpp_action::GoalResponse::REJECT;
+    }
+    if (goal->target_force < 0 || goal->target_force > 1) {
+        RCLCPP_ERROR(get_logger(), "Invalid goal request, target force must be between 0 and 1");
+        return rclcpp_action::GoalResponse::REJECT;
+    }
 
     running_ = true;
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
