@@ -266,8 +266,23 @@ int GripperNode::convertToGripperSystemPosition(double position)
 // inverse of convertToGripperSystemPosition
 double GripperNode::convertToMillimeters(int value)
 {
-    // strong approximation (assuming linear relationship)
-    return static_cast<double>((value - 255) * -1 * 0.14 / 255);
+    if (value <= 200) {
+        double a = -3.84615e-07;
+        double b = -5.67622e-04;
+        double c = 0.142692;
+        return a * pow(value, 2) + b * value + c
+    }
+    else if (value <= 226)
+    {
+        double a = 8.92857e-06;
+        double b = -4.38036e-03;
+        double c = 0.533911;
+        return a * pow(value, 2) + b * value + c;
+    }
+    else
+    {
+        return 0.0;
+    }
 }
 
 int GripperNode::convertToGripperSystem(double value)
