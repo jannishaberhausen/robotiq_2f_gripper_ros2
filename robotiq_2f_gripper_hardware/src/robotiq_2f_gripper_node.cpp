@@ -233,7 +233,7 @@ void GripperNode::update_gripper_state_callback() {
     }
 
     auto message = std_msgs::msg::Int32();
-    message.data = 0;
+    message.data = { static_cast<int>(driver_->is_object_grasped()) };
     gripper_state_publisher_->publish(message);
 }
 
