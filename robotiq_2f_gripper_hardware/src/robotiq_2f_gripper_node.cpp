@@ -270,7 +270,7 @@ double GripperNode::convertToMillimeters(int value)
         double a = -3.84615e-07;
         double b = -5.67622e-04;
         double c = 0.142692;
-        return a * pow(value, 2) + b * value + c
+        return a * pow(value, 2) + b * value + c;
     }
     else if (value <= 226)
     {
