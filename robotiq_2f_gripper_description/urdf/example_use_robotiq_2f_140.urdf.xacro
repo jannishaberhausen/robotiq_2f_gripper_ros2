@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="robotiq_2f_gripper">
+
+  <!-- args -->
+  <xacro:arg name="tf_prefix" default=""/>
+
+  <!-- import main macro -->
+  <xacro:include filename="$(find robotiq_2f_gripper_description)/urdf/robotiq_2f_140.xacro" />
+
+  <!-- create link fixed to the "world" -->
+  <link name="world" />
+
+  <!-- 2f gripper -->
+  <xacro:robotiq_2f_140 parent="world" tf_prefix="$(arg tf_prefix)">
+    <origin xyz="0 0 0" rpy="0 0 0"/> 
+  </xacro:robotiq_2f_140>
+
+</robot>

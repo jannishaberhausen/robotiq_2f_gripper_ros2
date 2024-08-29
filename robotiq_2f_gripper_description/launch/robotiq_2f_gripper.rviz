@@ -5,9 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Status1
-        - /RobotModel1
-        - /RobotModel1/Description Topic1
       Splitter Ratio: 0.5
     Tree Height: 549
   - Class: rviz_common/Selection
@@ -122,6 +119,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        world:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
       Mass Properties:
         Inertia: false
         Mass: false
@@ -133,7 +134,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: robotiq_arg2f_base_link
+    Fixed Frame: world
     Frame Rate: 30
   Name: root
   Tools:
@@ -176,25 +177,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 0.8813953399658203
+      Distance: 0.528568685054779
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
+        X: -0.03225173056125641
+        Y: 0.006945820525288582
+        Z: 0.07191401720046997
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.3453983962535858
+      Pitch: 0.22539843618869781
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.2304084300994873
+      Yaw: 0.025398634374141693
     Saved: ~
 Window Geometry:
   Displays:
@@ -212,5 +213,6 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 446
-  Y: 149
+  X: 60
+  Y: 60
+
