@@ -27,9 +27,9 @@ The repo contains four ROS2 packages (detailed description below):
 
 ## Getting Started
 
-These instrcutions assume you have ROS2 (tested with ROS2 Humble) installed.
+These instrcutions assume you have ROS2 (tested with ROS2 Humble) installed. The repo depends on the [serial-ros2](https://github.com/RoverRobotics-forks/serial-ros2) package for communication with the gripper. An updated fork of the serial-ros2 repo is included as a submodule to this repo.
 
-Clone the repo to your ROS2 workspace and build the ROS2 packages:
+Clone this repo to your ROS2 workspace and build the ROS2 packages:
 
 ```bash
 colcon build
