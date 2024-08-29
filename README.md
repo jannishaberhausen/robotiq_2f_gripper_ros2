@@ -2,19 +2,6 @@
 
 A ROS2 package for use with the Robotiq 2-Finger 140mm gripper.
 
-IMPORTANT:
-This package requires the [serial-ros2](https://github.com/RoverRobotics-forks/serial-ros2) package for communication with the gripper. Unfortunately, the package is NOT available for install using `sudo apt install ros-humble-serial`. Instead, clone the [serial-ros2](https://github.com/RoverRobotics-forks/serial-ros2) repo and follow these commands to install the serial package:
-
-```bash
-cd serial-ros2
-mkdir build
-cd build/
-cmake -DCMAKE_CXX_FLAGS="-fPIC" ..
-make install
-```
-
-Afterwards, you can follow the _Getting Started_ instructions below to build this repo.
-
 ## Overview
 
 The repo contains four ROS2 packages (detailed description below):
