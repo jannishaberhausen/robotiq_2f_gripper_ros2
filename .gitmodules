@@ -1,0 +1,3 @@
+[submodule "serial-ros2"]
+	path = serial-ros2
+	url = https://github.com/jannishaberhausen/serial-ros2
