@@ -56,6 +56,12 @@ ros2 action send_goal /robotiq_2f_gripper_action robotiq_2f_gripper_msgs/action/
 
 You can specify a target postion in meters, i.e. distance between the gripper fingers, and a target speed and force in percent (between 0 to 1).
 
+Listen to the current joint states:
+
+```bash
+ros2 topic echo /robotiq_2f_gripper/joint_states
+```
+
 If you don't want to move the hardware, or don't have the hardware available, but still want to test the ROS2 action server you can launch the node with `fake_hardware:=true`:
 
 ```bash

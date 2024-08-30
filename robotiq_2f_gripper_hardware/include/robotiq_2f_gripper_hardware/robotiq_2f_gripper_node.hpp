@@ -29,9 +29,9 @@ class GripperNode : public rclcpp::Node {
         bool fake_hardware_;
         std::unique_ptr<DefaultDriver> driver_;
 
-        int gripper_position_;
-        int gripper_speed_;
-        int gripper_force_;
+        double gripper_position_;
+        double gripper_speed_;
+        double gripper_force_;
 
         rclcpp_action::Server<SetPosition>::SharedPtr action_server_;
         rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_publisher_;
