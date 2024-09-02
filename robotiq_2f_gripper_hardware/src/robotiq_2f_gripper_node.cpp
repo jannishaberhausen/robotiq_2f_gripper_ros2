@@ -216,14 +216,14 @@ void GripperNode::update_joint_state_callback() {
     double curr_gripper_position_rad;
     if (!fake_hardware_) {
         curr_gripper_position = static_cast<int>(driver_->get_gripper_position());
-        if (curr_gripper_position > 226) {
-            curr_gripper_position_rad = 0.7;
+        if (curr_gripper_position > FULLY_CLOSED_THRESHOLD) {
+            curr_gripper_position_rad = MAX_GRIPPER_POSITION_RAD;
         } else {
-            curr_gripper_position_rad = curr_gripper_position / 226.0 * 0.7;
+            curr_gripper_position_rad = curr_gripper_position / FULLY_CLOSED_THRESHOLD * MAX_GRIPPER_POSITION_RAD;
         }
     }
     else {
-        curr_gripper_position_rad = ((-1 * gripper_position_) + 0.142) / 0.142 * 0.7;
+        curr_gripper_position_rad = ((-1 * gripper_position_) + MAX_GRIPPER_POSITION_METER) / MAX_GRIPPER_POSITION_METER * MAX_GRIPPER_POSITION_RAD;
     }
 
     auto message = sensor_msgs::msg::JointState();
