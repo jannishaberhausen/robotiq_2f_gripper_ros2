@@ -228,7 +228,7 @@ void GripperNode::update_joint_state_callback() {
 
     auto message = sensor_msgs::msg::JointState();
     message.header.stamp = now();
-    message.name = {"gripper_distance"};    
+    message.name = {"finger_joint"};    
     message.position = {curr_gripper_position_rad};
     joint_state_publisher_->publish(message);
 }
