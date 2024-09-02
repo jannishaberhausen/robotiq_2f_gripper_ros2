@@ -2,6 +2,7 @@
 float32 target_position     # [m] target distance between fingers
 float32 target_speed 1.0    # [%] of max speed [0.0 - 1.0]
 float32 target_force 0.5    # [%] of max force [0.0 - 1.0]
+string command "move_to_goal" # "move_to_goal" or "move_to_contact" or "drop_detection"
 ---
 # Result definition
 bool success

@@ -95,7 +95,16 @@ rclcpp_action::GoalResponse GripperNode::handle_move_goal(
     const rclcpp_action::GoalUUID& /*uuid*/,
     std::shared_ptr<const SetPosition::Goal> goal)
 {
-    RCLCPP_INFO(get_logger(), "Received goal request with %f meters", goal->target_position);
+    if (goal->command == "move_to_goal") {
+        RCLCPP_INFO(get_logger(), "Received goal request with %f meters", goal->target_position);
+    }
+    else if (goal->command == "move_to_contact") {
+        RCLCPP_INFO(get_logger(), "Received goal request to move to contact");
+    }
+    else {
+        RCLCPP_ERROR(get_logger(), "Invalid goal request, command must be either 'move_to_goal' or 'move_to_contact'");
+        return rclcpp_action::GoalResponse::REJECT;
+    }
 
     if (running_) {
         RCLCPP_WARN(get_logger(), "Discarding new goal request, previous goal still running");
@@ -109,11 +118,14 @@ rclcpp_action::GoalResponse GripperNode::handle_move_goal(
         }
     }
 
-    // Check if the goal is valid
-    if (goal->target_position < 0 || goal->target_position > 0.142) {
-        RCLCPP_ERROR(get_logger(), "Invalid goal request, target position (in meters [m]) must be between 0 (fully closed) and 0.14 (fully open)");
-        return rclcpp_action::GoalResponse::REJECT;
+    if (goal->command == "move_to_goal") {
+        // Check if the goal is valid
+        if (goal->target_position < 0 || goal->target_position > 0.142) {
+            RCLCPP_ERROR(get_logger(), "Invalid goal request, target position (in meters [m]) must be between 0 (fully closed) and 0.14 (fully open)");
+            return rclcpp_action::GoalResponse::REJECT;
+        }
     }
+
     if (goal->target_speed < 0 || goal->target_speed > 1) {
         RCLCPP_ERROR(get_logger(), "Invalid goal request, target speed must be between 0 and 1");
         return rclcpp_action::GoalResponse::REJECT;
@@ -142,26 +154,12 @@ void GripperNode::handle_move_accepted(
     std::thread{std::bind(&GripperNode::execute, this, _1), goal_handle}.detach();
 }
 
-void GripperNode::execute(
-    const std::shared_ptr<rclcpp_action::ServerGoalHandle<SetPosition>> goal_handle)
+void GripperNode::move_to_goal_(
+    const std::shared_ptr<const SetPosition::Goal> goal,
+    const std::shared_ptr<rclcpp_action::ServerGoalHandle<SetPosition>> goal_handle,
+    std::shared_ptr<SetPosition::Feedback> feedback,
+    std::shared_ptr<SetPosition::Result> result)
 {
-    RCLCPP_INFO(get_logger(), "Executing goal");
-    const auto goal = goal_handle->get_goal();
-    auto feedback = std::make_shared<SetPosition::Feedback>();
-    auto result = std::make_shared<SetPosition::Result>();
-
-    if (fake_hardware_) {
-        gripper_position_ = goal->target_position;
-        gripper_speed_ = 0;
-        gripper_force_ = goal->target_force;
-
-        RCLCPP_INFO(get_logger(), "[Fake Hardware] Gripper movement completed.");
-        result->success = true;
-        goal_handle->succeed(result);
-        running_ = false;
-        return;
-    }
-
     try {
         feedback->feedback = "Setting force";
         goal_handle->publish_feedback(feedback);
@@ -207,6 +205,112 @@ void GripperNode::execute(
     running_ = false;
 }
 
+void GripperNode::move_to_contact_(
+    const std::shared_ptr<const SetPosition::Goal> goal,
+    const std::shared_ptr<rclcpp_action::ServerGoalHandle<SetPosition>> goal_handle,
+    std::shared_ptr<SetPosition::Feedback> feedback,
+    std::shared_ptr<SetPosition::Result> result)
+{
+    try {
+        feedback->feedback = "Setting force";
+        goal_handle->publish_feedback(feedback);
+        driver_->set_force(convertToGripperSystem(goal->target_force));
+
+        feedback->feedback = "Setting speed";
+        goal_handle->publish_feedback(feedback);
+        driver_->set_speed(convertToGripperSystem(goal->target_speed));
+
+        feedback->feedback = "Setting position";
+        goal_handle->publish_feedback(feedback);
+        // convertToGripperSystemPosition
+        driver_->set_gripper_position(convertToGripperSystemPosition(goal->target_position));
+
+        auto start_time = std::chrono::steady_clock::now();
+        auto timeout = std::chrono::seconds(action_timeout_);
+        while (std::chrono::steady_clock::now() - start_time < timeout)
+        {
+            if (!driver_->gripper_is_moving())
+            {
+                if (driver_->is_object_grasped())
+                {
+                    RCLCPP_INFO(get_logger(), "Object grasped.");
+                    result->success = true;
+                    goal_handle->succeed(result);
+                    running_ = false;
+                    return;
+                }
+                // else
+                RCLCPP_INFO(get_logger(), "Gripper movement completed. Object not grasped.");
+                result->success = false;
+                goal_handle->abort(result);
+                running_ = false;
+                return;
+            }
+            
+            // provide feedback about ongoing movement
+            feedback->feedback = "Gripper is moving";
+            goal_handle->publish_feedback(feedback);
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    } catch (const std::runtime_error& e) {
+        RCLCPP_ERROR(get_logger(), "Error executing goal: %s", e.what());
+        result->success = false;
+        goal_handle->abort(result);
+        running_ = false;
+        return;
+    }
+    RCLCPP_INFO(get_logger(), "Gripper movement timed out.");
+    result->success = false;
+    goal_handle->abort(result);
+    running_ = false;  
+}
+
+void GripperNode::execute(
+    const std::shared_ptr<rclcpp_action::ServerGoalHandle<SetPosition>> goal_handle)
+{
+    RCLCPP_INFO(get_logger(), "Executing goal");
+    const auto goal = goal_handle->get_goal();
+    auto feedback = std::make_shared<SetPosition::Feedback>();
+    auto result = std::make_shared<SetPosition::Result>();
+
+    if (fake_hardware_) {
+        gripper_position_ = goal->target_position;
+        gripper_speed_ = 0;
+        gripper_force_ = goal->target_force;
+
+        RCLCPP_INFO(get_logger(), "[Fake Hardware] Gripper movement completed.");
+        result->success = true;
+        goal_handle->succeed(result);
+        running_ = false;
+        return;
+    }
+
+    if (goal->command == "move_to_goal") {
+        move_to_goal_(goal, goal_handle, feedback, result);
+    }
+    else if (goal->command == "move_to_contact") {
+        move_to_contact_(goal, goal_handle, feedback, result);
+    }
+    else {
+        RCLCPP_ERROR(get_logger(), "Invalid goal request, command must be either 'move_to_goal' or 'move_to_contact'");
+        result->success = false;
+        goal_handle->abort(result);
+        running_ = false;
+        return;
+    }
+}
+
+// WIP: implement object drop detection
+// void GripperNode::object_dropped_detection_() {
+//     if (!driver->is_object_grasped()) {
+//         RCLCPP_WARN(get_logger(), "You tried to activate drop detection, but no object was detected in the gripper.");
+//         return;
+//     }
+//     else {
+//         RCLCPP_INFO(get_logger(), "Activated drop detection.");
+//     }
+// }
+
 void GripperNode::update_joint_state_callback() {
     if (running_) {
         return;
@@ -233,7 +337,11 @@ void GripperNode::update_gripper_state_callback() {
     }
 
     auto message = std_msgs::msg::Int32();
-    message.data = { static_cast<int>(driver_->is_object_grasped()) };
+    if (!fake_hardware_) {
+        message.data = { static_cast<int>(driver_->is_object_grasped()) };
+    } else {
+        message.data = { 0 };
+    }
     gripper_state_publisher_->publish(message);
 }
 

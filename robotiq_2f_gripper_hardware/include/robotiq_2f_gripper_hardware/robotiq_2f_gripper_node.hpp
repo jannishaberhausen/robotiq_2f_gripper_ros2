@@ -55,6 +55,17 @@ class GripperNode : public rclcpp::Node {
         int convertToGripperSystemPosition(double position);
         double convertToMillimeters(int value);
         int convertToGripperSystem(double value);
+
+        void move_to_goal_(
+            const std::shared_ptr<const SetPosition::Goal> goal,
+            const std::shared_ptr<rclcpp_action::ServerGoalHandle<SetPosition>> goal_handle,
+            std::shared_ptr<SetPosition::Feedback> feedback,
+            std::shared_ptr<SetPosition::Result> result);
+        void move_to_contact_(
+            const std::shared_ptr<const SetPosition::Goal> goal,
+            const std::shared_ptr<rclcpp_action::ServerGoalHandle<SetPosition>> goal_handle,
+            std::shared_ptr<SetPosition::Feedback> feedback,
+            std::shared_ptr<SetPosition::Result> result);
 };
 
 }  // namespace robotiq_2f_gripper_hardware
