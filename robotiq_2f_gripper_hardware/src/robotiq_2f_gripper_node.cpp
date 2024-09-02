@@ -3,6 +3,7 @@
 #include <iostream>
 #include <memory>
 #include <cmath>
+#include <std_msgs/msg/bool.hpp>
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -77,9 +78,9 @@ GripperNode::GripperNode() : Node("robotiq_2f_gripper_node") {
     timer_1_ = create_wall_timer(
         std::chrono::milliseconds(500), std::bind(&GripperNode::update_joint_state_callback, this));
 
-    gripper_state_publisher_ = create_publisher<std_msgs::msg::Int32>("robotiq_2f_gripper/gripper_state", 1);
+    gripper_state_publisher_ = create_publisher<std_msgs::msg::Bool>("robotiq_2f_gripper/gripper_state", 1);
     timer_2_ = create_wall_timer(
-        std::chrono::milliseconds(500), std::bind(&GripperNode::update_gripper_state_callback, this));
+        std::chrono::milliseconds(50), std::bind(&GripperNode::update_gripper_state_callback, this));
 
     RCLCPP_INFO(get_logger(), "Gripper node initialized");
 }
@@ -353,11 +354,11 @@ void GripperNode::update_gripper_state_callback() {
         return;
     }
 
-    auto message = std_msgs::msg::Int32();
+    auto message = std_msgs::msg::Bool();
     if (!fake_hardware_) {
-        message.data = { static_cast<int>(driver_->is_object_grasped()) };
+        message.data = { static_cast<bool>(driver_->is_object_grasped()) };
     } else {
-        message.data = { 0 };
+        message.data = { false };
     }
     gripper_state_publisher_->publish(message);
 }
