@@ -29,6 +29,10 @@ class GripperNode : public rclcpp::Node {
         bool fake_hardware_;
         std::unique_ptr<DefaultDriver> driver_;
 
+        const double MAX_GRIPPER_POSITION_METER = 0.142; // distance between fingers in meters
+        const int FULLY_CLOSED_THRESHOLD = 226; // gripper position value (from hexadecimal gripper system interpreted as int) when first fully closed (226 to 255 is fully closed) 
+        const double MAX_GRIPPER_POSITION_RAD = 0.7; // upper limit of the gripper in radians (0.7 is fully closed)
+
         double gripper_position_;
         double gripper_speed_;
         double gripper_force_;

@@ -213,17 +213,23 @@ void GripperNode::update_joint_state_callback() {
     }
 
     double curr_gripper_position;
+    double curr_gripper_position_rad;
     if (!fake_hardware_) {
-        curr_gripper_position = convertToMillimeters(static_cast<int>(driver_->get_gripper_position()));
+        curr_gripper_position = static_cast<int>(driver_->get_gripper_position());
+        if (curr_gripper_position > FULLY_CLOSED_THRESHOLD) {
+            curr_gripper_position_rad = MAX_GRIPPER_POSITION_RAD;
+        } else {
+            curr_gripper_position_rad = curr_gripper_position / FULLY_CLOSED_THRESHOLD * MAX_GRIPPER_POSITION_RAD;
+        }
     }
     else {
-        curr_gripper_position = gripper_position_;
+        curr_gripper_position_rad = ((-1 * gripper_position_) + MAX_GRIPPER_POSITION_METER) / MAX_GRIPPER_POSITION_METER * MAX_GRIPPER_POSITION_RAD;
     }
 
     auto message = sensor_msgs::msg::JointState();
     message.header.stamp = now();
-    message.name = {"gripper_distance"};    
-    message.position = {curr_gripper_position};
+    message.name = {"finger_joint"};    
+    message.position = {curr_gripper_position_rad};
     joint_state_publisher_->publish(message);
 }
 
