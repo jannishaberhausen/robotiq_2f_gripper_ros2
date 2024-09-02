@@ -101,8 +101,11 @@ rclcpp_action::GoalResponse GripperNode::handle_move_goal(
     else if (goal->command == "move_to_contact") {
         RCLCPP_INFO(get_logger(), "Received goal request to move to contact");
     }
+    else if (goal->command == "drop_detection") {
+        RCLCPP_INFO(get_logger(), "Received request to activate object drop detection");
+    }
     else {
-        RCLCPP_ERROR(get_logger(), "Invalid goal request, command must be either 'move_to_goal' or 'move_to_contact'");
+        RCLCPP_ERROR(get_logger(), "Invalid goal request, command must be one of 'move_to_goal', 'move_to_contact', or 'drop_detection'");
         return rclcpp_action::GoalResponse::REJECT;
     }
 
@@ -125,7 +128,6 @@ rclcpp_action::GoalResponse GripperNode::handle_move_goal(
             return rclcpp_action::GoalResponse::REJECT;
         }
     }
-
     if (goal->target_speed < 0 || goal->target_speed > 1) {
         RCLCPP_ERROR(get_logger(), "Invalid goal request, target speed must be between 0 and 1");
         return rclcpp_action::GoalResponse::REJECT;
@@ -265,6 +267,22 @@ void GripperNode::move_to_contact_(
     running_ = false;  
 }
 
+
+
+// WIP: implement object drop detection
+void GripperNode::object_dropped_detection_() {
+    if (!driver_->is_object_grasped()) {
+        RCLCPP_WARN(get_logger(), "You tried to activate drop detection, but no object was detected in the gripper.");
+        return;
+    } else {
+        RCLCPP_INFO(get_logger(), "Activated drop detection.");
+    }
+
+    drop_detection_timer_ = create_wall_timer(
+        std::chrono::milliseconds(100), std::bind(&GripperNode::object_dropped_callback, this));
+
+}
+
 void GripperNode::execute(
     const std::shared_ptr<rclcpp_action::ServerGoalHandle<SetPosition>> goal_handle)
 {
@@ -291,8 +309,11 @@ void GripperNode::execute(
     else if (goal->command == "move_to_contact") {
         move_to_contact_(goal, goal_handle, feedback, result);
     }
+    else if (goal->command == "drop_detection") {
+        object_dropped_detection_();
+    }
     else {
-        RCLCPP_ERROR(get_logger(), "Invalid goal request, command must be either 'move_to_goal' or 'move_to_contact'");
+        RCLCPP_ERROR(get_logger(), "Invalid goal request, command must be one of 'move_to_goal', 'move_to_contact', or 'drop_detection'");
         result->success = false;
         goal_handle->abort(result);
         running_ = false;
@@ -300,16 +321,12 @@ void GripperNode::execute(
     }
 }
 
-// WIP: implement object drop detection
-// void GripperNode::object_dropped_detection_() {
-//     if (!driver->is_object_grasped()) {
-//         RCLCPP_WARN(get_logger(), "You tried to activate drop detection, but no object was detected in the gripper.");
-//         return;
-//     }
-//     else {
-//         RCLCPP_INFO(get_logger(), "Activated drop detection.");
-//     }
-// }
+void GripperNode::object_dropped_callback() {
+    if (!driver_->is_object_grasped()) {
+        RCLCPP_INFO(get_logger(), "Object dropped.");
+        drop_detection_timer_->cancel();
+    }
+}
 
 void GripperNode::update_joint_state_callback() {
     if (running_) {
@@ -326,7 +343,7 @@ void GripperNode::update_joint_state_callback() {
 
     auto message = sensor_msgs::msg::JointState();
     message.header.stamp = now();
-    message.name = {"gripper_distance"};    
+    message.name = {"finger_joint"};    
     message.position = {curr_gripper_position};
     joint_state_publisher_->publish(message);
 }

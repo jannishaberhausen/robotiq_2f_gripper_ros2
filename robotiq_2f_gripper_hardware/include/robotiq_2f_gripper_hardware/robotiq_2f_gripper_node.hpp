@@ -39,7 +39,7 @@ class GripperNode : public rclcpp::Node {
 
         std::atomic<bool> running_{false};
         sensor_msgs::msg::JointState joint_state_;
-        rclcpp::TimerBase::SharedPtr timer_1_, timer_2_;
+        rclcpp::TimerBase::SharedPtr timer_1_, timer_2_, drop_detection_timer_;
 
         rclcpp_action::GoalResponse handle_move_goal(
             const rclcpp_action::GoalUUID& /*uuid*/,
@@ -50,6 +50,7 @@ class GripperNode : public rclcpp::Node {
         void execute(const std::shared_ptr<rclcpp_action::ServerGoalHandle<SetPosition>> goal_handle);
         void update_joint_state_callback();
         void update_gripper_state_callback();
+        void object_dropped_callback();
 
         uint8_t decimalToHex(int value);
         int convertToGripperSystemPosition(double position);
@@ -66,6 +67,7 @@ class GripperNode : public rclcpp::Node {
             const std::shared_ptr<rclcpp_action::ServerGoalHandle<SetPosition>> goal_handle,
             std::shared_ptr<SetPosition::Feedback> feedback,
             std::shared_ptr<SetPosition::Result> result);
+        void object_dropped_detection_();
 };
 
 }  // namespace robotiq_2f_gripper_hardware
