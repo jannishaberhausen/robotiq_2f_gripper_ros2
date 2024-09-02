@@ -213,17 +213,23 @@ void GripperNode::update_joint_state_callback() {
     }
 
     double curr_gripper_position;
+    double curr_gripper_position_rad;
     if (!fake_hardware_) {
-        curr_gripper_position = convertToMillimeters(static_cast<int>(driver_->get_gripper_position()));
+        curr_gripper_position = static_cast<int>(driver_->get_gripper_position());
+        if (curr_gripper_position > 226) {
+            curr_gripper_position_rad = 0.7;
+        } else {
+            curr_gripper_position_rad = curr_gripper_position / 226.0 * 0.7;
+        }
     }
     else {
-        curr_gripper_position = gripper_position_;
+        curr_gripper_position_rad = ((-1 * gripper_position_) + 0.142) / 0.142 * 0.7;
     }
 
     auto message = sensor_msgs::msg::JointState();
     message.header.stamp = now();
     message.name = {"gripper_distance"};    
-    message.position = {curr_gripper_position};
+    message.position = {curr_gripper_position_rad};
     joint_state_publisher_->publish(message);
 }
 
