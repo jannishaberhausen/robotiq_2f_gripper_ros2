@@ -4,7 +4,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
-#include <std_msgs/msg/int32.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include <thread>
 
 #include <robotiq_2f_gripper_msgs/action/move_two_finger_gripper.hpp>
@@ -39,7 +39,7 @@ class GripperNode : public rclcpp::Node {
 
         rclcpp_action::Server<SetPosition>::SharedPtr action_server_;
         rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_publisher_;
-        rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr gripper_state_publisher_;
+        rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr gripper_state_publisher_;
 
         std::atomic<bool> running_{false};
         sensor_msgs::msg::JointState joint_state_;
